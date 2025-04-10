@@ -72,7 +72,6 @@ function enrichExpression() {
                     currentExpression = currentExpression.flat();
                     i--;
                 }
-                break;
             }
         }
     }
