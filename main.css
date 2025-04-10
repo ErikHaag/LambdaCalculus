@@ -1,0 +1,10 @@
+#current {
+    font-family: "consolas";
+    overflow: auto;
+    white-space: pre nowrap;
+    width: max-content;
+}
+
+span.replacable {
+    font-weight: bold;
+}
