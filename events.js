@@ -2,8 +2,7 @@ const inputArea = document.getElementById("input");
 const expandCheck = document.getElementById("expand");
 
 inputArea.addEventListener("input", () => {
-    let p = inputArea.value;
-    if (parse(p)) {
+    if (validate(inputArea.value)) {
         enrichExpression();
         draw();
     }
@@ -21,7 +20,7 @@ expandCheck.addEventListener("change", () => {
 
 let parsedExpression = [];
 
-function parse(string) {
+function validate(string) {
     string = string.replaceAll("λ", "\\").replaceAll("\n", "").replaceAll(" ", "")
     {
         function increment() {
@@ -100,39 +99,32 @@ function parse(string) {
     }
     parsedExpression = [];
     while (string.length > 0) {
-        if (string[0] == "\\" || string[0] == "(") {
+        if (string[0] == "\\" || string[0] == "(" || string[0] == ")") {
             parsedExpression.push(string[0]);
             string = string.substring(1);
             continue;
         }
-        if (string[0] == ")") {
+        if (string[0] == ",") {
             string = string.substring(1);
-            if (string[0] == ",") {
-                string = string.substring(1);
-            }
             continue;
+
         }
         let ic = string.indexOf(",");
         let ip = string.indexOf(")");
         let i = -1;
-        let p = false
         if (ic == -1 && ip == -1) {
             i = string.length;
         } else if (ic != -1 && ic < ip) {
             i = ic;
         } else {
             i = ip;
-            p = true;
         }
         let f = string.substring(0, i);
         if (/^\d+$/.test(f)) {
             f = BigInt(f);
         }
         parsedExpression.push(f);
-        string = string.substring(i + 1);
-        if (p && string[0] == ",") {
-            string = string.substring(1);
-        }
+        string = string.substring(i);
     }
     return true;
 }

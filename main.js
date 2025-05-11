@@ -48,6 +48,11 @@ function enrichExpression() {
         return i;
     }
     currentExpression = structuredClone(parsedExpression);
+    for (let i = currentExpression.length - 1; i >= 0; i--) {
+        if (currentExpression[i] == ")") {
+            currentExpression.splice(i, 1);
+        }
+    }
     let patternNames = replace.map((e) => e[0]);
     if (expandDiagram) {
         for (let i = 0; i < currentExpression.length; i++) {
@@ -148,7 +153,8 @@ function enrichExpression() {
             let replacableIndex = -1;
             if (/^N(0|[1-9]\d*)$/.test(currentExpression[i])) {
                 replacableIndex = -2;
-            } else {``
+            } else {
+                ``
                 for (let j = 0; j < replace.length; j++) {
                     if (replace[j][0] == currentExpression[i]) {
                         replacableIndex = j;
@@ -222,17 +228,21 @@ function draw() {
             }
             break;
         }
+        let finishedLambda = false;
         for (let j = i - 1; j >= 0; j--) {
             if (currentExpression[j].type == "lambda" && i == currentExpression[j].next) {
                 currentExpression[j].type = "completedLambda";
                 currentExpression[j].px = currentExpression[j + 1].px;
                 y--;
+                finishedLambda = true;
             }
         }
+        return finishedLambda;
     }
 
     function propagate(i) {
         for (let j = i - 1; j >= 0; j--) {
+            // !A && !B <=> !(A || B)
             if (currentExpression[j].type != "lambda" && currentExpression[j].type != "apply") {
                 return;
             }
@@ -240,12 +250,15 @@ function draw() {
         }
     }
 
+    let justFinishedLambda = false;
+
     for (let i = 0; i < currentExpression.length; i++) {
-        crosslink(i);
+        justFinishedLambda ||= crosslink(i);
         propagate(i);
         const current = currentExpression[i];
         switch (current.type) {
             case "lambda":
+                justFinishedLambda = false;
                 if (current.lambdaClass == "adjacent") {
                     x++;
                     for (let j = 0n; j <= y; j++) {
@@ -272,7 +285,11 @@ function draw() {
                 stack.push(i);
                 break;
             case "variable":
+                if (justFinishedLambda) {
+                    x++;
+                }
                 x++;
+                justFinishedLambda = false;
                 for (let j = 0n; j <= y; j++) {
                     if (y - j < current.value - 1n) {
                         setChar(x, j, symbols.c);
@@ -289,7 +306,11 @@ function draw() {
                 applyDepth.push(y + 1n);
                 break;
             case "symbol":
+                if (justFinishedLambda) {
+                    x++;
+                }
                 x++;
+                justFinishedLambda = false;
                 for (let j = 0; j < current.value.length; j++) {
                     for (let k = 0n; k <= y; k++) {
                         setChar(x + BigInt(j), k, symbols.d);
