@@ -81,7 +81,7 @@ function enrichExpression() {
         }
     }
     let first = true;
-    let enrichedTypes = []
+    let enrichedTypes = [];
     for (let i = 0; i < currentExpression.length; i++) {
         if (currentExpression[i] == "\\") {
             lambdaClass = "";
@@ -291,6 +291,9 @@ function draw() {
                 x++;
                 justFinishedLambda = false;
                 for (let j = 0n; j <= y; j++) {
+                    if (getChar(x - 1n, j) == symbols.e) {
+                        setChar(x - 1n, j, symbols.d);
+                    }
                     if (y - j < current.value - 1n) {
                         setChar(x, j, symbols.c);
                     } else if (y - j == current.value - 1n) {
@@ -350,6 +353,13 @@ function setChar(x, y, c, prefix = "", postfix = "") {
         }
     }
     display[y][x] = prefix + c + postfix;
+}
+
+function getChar(x, y) {
+    if (x < 0n || x >= displayWidth || y < 0n || y >= displayHeight) {
+        return c.space;
+    }
+    return display[y][x];
 }
 
 function findDeBruijnIndexLambda(i) {
